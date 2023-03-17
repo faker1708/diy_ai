@@ -22,6 +22,6 @@ num_examples = 3
 lw = 4
 
 X = torch.normal(0, 1, (num_examples, lw))
-
+X = X.cuda()
 print(X)
 
