@@ -5,13 +5,13 @@ import torch
 class dnn():
     # 开始写双层
 
-    n = 2**7   # 输入维度
-    m = 2**5   # 输出维度
+    n = 2**8   # 输入维度
+    m = 2**4   # 输出维度
     l = 2**2
     k = 2**1
 
-    batch_size = 2**10
-    batch_hight = 2**2
+    batch_size = 2**20 # 显存爆了
+    batch_hight = 2**8
 
 
     rl = torch.nn.ReLU(inplace=False)
@@ -173,7 +173,7 @@ class dnn():
                     b1.grad.zero_()
 
 
-            if(epoch%2**7 == 0):
+            if(epoch%2**1 == 0):
                 # print(loss)
                 # print(float(loss),end='\n')
                 print(float(loss),epoch)

@@ -10,7 +10,7 @@ class dnn():
     l = 2**2
     k = 2**1
 
-    batch_size = 2**10
+    batch_size = 2**10 
     batch_hight = 2**2
 
 
@@ -173,7 +173,7 @@ class dnn():
                     b1.grad.zero_()
 
 
-            if(epoch%2**7 == 0):
+            if(epoch%2**6 == 0):
                 # print(loss)
                 # print(float(loss),end='\n')
                 print(float(loss),epoch)

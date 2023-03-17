@@ -5,13 +5,16 @@ import torch
 class dnn():
     # 开始写双层
 
-    n = 2**7   # 输入维度
-    m = 2**5   # 输出维度
+    n = 2**2   # 输入维度
+
+
+    m = 2**2   # 输出维度
+
     l = 2**2
     k = 2**1
 
-    batch_size = 2**10
-    batch_hight = 2**2
+    batch_size = 2**11
+    batch_hight = 2**11
 
 
     rl = torch.nn.ReLU(inplace=False)
@@ -19,7 +22,7 @@ class dnn():
     
     lr = 0.03
     # lr = 1
-    train_count = 2**17
+    train_count = 10* 2**6
 
 
     true_w = torch.normal(0,1,(m,n)).half().cuda()
@@ -173,7 +176,7 @@ class dnn():
                     b1.grad.zero_()
 
 
-            if(epoch%2**7 == 0):
+            if(epoch%1 == 0):
                 # print(loss)
                 # print(float(loss),end='\n')
                 print(float(loss),epoch)

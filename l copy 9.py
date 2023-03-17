@@ -3,45 +3,54 @@ import torch
 
 
 class dnn():
-    # 开始写双层
 
-    n = 2**7   # 输入维度
-    m = 2**5   # 输出维度
-    l = 2**2
-    k = 2**1
+    # batch_size 越小，成绩越好。奇怪
+    # 模型大时，batchsize 也要 大，不然loss一直是nan
 
-    batch_size = 2**10
-    batch_hight = 2**2
+    # 数据太多，但模型不够大，也就是说，数据集中会存在矛盾的冲突的数据。导致难以训练 。也有可能 啊。
+
+    # 模型越大，loss 越难收敛到小的范围里。几十都是福报了。可能 还是那个问题，模型太小，但数据太大，有太多矛盾的数据 了。
+
+    #   模型太大，数据 太少，也训练不出来。
+    # 一般来说，loss小于1才叫成功吧。大于1可以说是看个乐呵。
+
+    # 数据相对模型一旦少，成绩就不会好。数据 一旦多，由于我这个程序设计的问题，会产生矛盾数据，成绩也会差。无法收敛到很小 的范围内
+
+    # bs 也不是越小越好。。。太玄学了。
+
+    # 学习率太大，会导致loss变成nan,没法算了。所以loss即使很大，inf ,也不要让lr超过10
+    # bs相对模型太小，则 loss会变成nan
+
+    # 各种玄学，规律太难总结 了。
+
+
+    n = 2**8   # 输入维度
+    m = 2**8   # 输出维度
+    batch_size = 2**5
+    batch_hight = 2**6
 
 
     rl = torch.nn.ReLU(inplace=False)
     
     
     lr = 0.03
-    # lr = 1
-    train_count = 2**17
+    lr = 10
+    train_count = 100* 2**3
 
 
     true_w = torch.normal(0,1,(m,n)).half().cuda()
     true_b = torch.normal(0,1,(m,batch_size)).half().cuda()
 
-    true_w1 = torch.normal(0,1,(l,m)).half().cuda()
-    true_b1 = torch.normal(0,1,(l,batch_size)).half().cuda()
-
-    
-    true_w2 = torch.normal(0,1,(k,l)).half().cuda()
-    true_b2 = torch.normal(0,1,(k,batch_size)).half().cuda()
 
 
+    def update(self,w,b):
+        with torch.no_grad():
+            w -= self.lr * w.grad 
+            w.grad.zero_()
 
-    # def update(self,w,b):
-    #     with torch.no_grad():
-    #         w -= self.lr * w.grad 
-    #         w.grad.zero_()
 
-
-    #         b -= self.lr * b.grad 
-    #         b.grad.zero_()
+            b -= self.lr * b.grad 
+            b.grad.zero_()
 
 
     def loss_f(self,y,true_y,batch):
@@ -59,18 +68,8 @@ class dnn():
 
 
     def dlf(self):
-        # 人工生成数据集
-
         true_w = self.true_w
         true_b = self.true_b
-
-        true_w1 = self.true_w1
-        true_b1 = self.true_b1
-        
-        true_w2 = self.true_w2
-        true_b2 = self.true_b2
-        
-        
         batch_hight = self.batch_hight
         batch_size = self.batch_size
 
@@ -81,9 +80,8 @@ class dnn():
             x = torch.normal(0,1,(n,batch_size)).half().cuda()
 
 
-            x1 = self.rl(true_w @ x + true_b)
-            x2 = self.rl(true_w1 @ x1 + true_b1)
-            y = self.rl(true_w2 @ x2 + true_b2)
+            y = self.rl(true_w @ x + true_b)
+            
 
 
             data = dict()
@@ -100,12 +98,6 @@ class dnn():
         true_w = self.true_w
         true_b = self.true_b
 
-        true_w1 = self.true_w1
-        true_b1 = self.true_b1
-
-        
-        true_w2 = self.true_w2
-        true_b2 = self.true_b2
 
 
         # x = torch.normal(0,1,(n,batch_size)).half().cuda()
@@ -116,15 +108,6 @@ class dnn():
         b = torch.normal(0,1,(self.m,batch_size)).half().cuda()
         b.requires_grad=True
 
-        w1 = torch.normal(0,1,(self.l,self.m)).half().cuda()
-        w1.requires_grad=True
-        b1 = torch.normal(0,1,(self.l,batch_size)).half().cuda()
-        b1.requires_grad=True
-        
-        w2 = torch.normal(0,1,(self.k,self.l)).half().cuda()
-        w2.requires_grad=True
-        b2 = torch.normal(0,1,(self.k,batch_size)).half().cuda()
-        b2.requires_grad=True
 
 
 
@@ -134,7 +117,7 @@ class dnn():
         # data 是二维，维度分别是 m batch_size 
 
 
-        # train_cost = 0
+        train_cost = 0
 
         for epoch in range(self.train_count):
 
@@ -143,48 +126,41 @@ class dnn():
                 x = data['x']
                 true_y = data['y']
 
-               
-                x1 = self.rl(w @ x+ b)
-                x2 = self.rl(w1 @ x1+ b1)
-                y = self.rl(w2 @ x2 + b2)
+                # true_y = self.rl(true_w @ x +true_b)
+                
+                # wx = w @ x
+
+                # wxb = wx+b
+                y = self.rl(w @ x+ b)
                 
                 loss = self.loss_f(y,true_y,batch_size)
-            
+                # if(loss>100):
+                #     loss = 100
+
+                    
 
                 loss.backward()
-
+                # self.update(w,b)
                 with torch.no_grad():
                     w -= self.lr * w.grad / batch_size
                     w.grad.zero_()
+
+
                     b -= self.lr * b.grad / batch_size
                     b.grad.zero_()
 
-                    w1 -= self.lr * w1.grad / batch_size
-                    w1.grad.zero_()
-                    b1 -= self.lr * b1.grad / batch_size
-                    b1.grad.zero_()
 
-
-
-
-                    w2 -= self.lr * w2.grad / batch_size
-                    w2.grad.zero_()
-                    b2 -= self.lr * b2.grad / batch_size
-                    b1.grad.zero_()
-
-
-            if(epoch%2**7 == 0):
+            if(epoch%100 == 0):
                 # print(loss)
-                # print(float(loss),end='\n')
-                print(float(loss),epoch)
+                print(float(loss),end='\n')
 
 
                 # print(self.lr)
                 if(loss>10):
                     # print('太大了')
-                    self.lr=2
+                    self.lr=4
                 elif(loss>1):
-                    self.lr = 0.1 #0.1
+                    self.lr = 0.1
                 else:
                     self.lr = 0.03
 
@@ -201,17 +177,8 @@ class dnn():
 
 
         x = torch.normal(0,1,(self.n,self.batch_size)).half().cuda()
-        x1 = self.rl(w @ x+b)
-        x2 = self.rl(w1 @ x1+b1)
-        y = self.rl(w2 @ x2 + b2)
-
-
-        
-        true_x1 = self.rl(true_w @ x + true_b)
-        true_x2 = self.rl(true_w1 @ true_x1 + true_b1)
-        true_y = self.rl(true_w2 @ true_x2 + true_b2)
-        
-        
+        y = self.rl(w @ x+b)
+        true_y = self.rl(true_w @ x + true_b)
         loss = self.loss_f(y,true_y,self.batch_size)
 
         loss = self.loss_f(b,true_b,self.batch_size)
