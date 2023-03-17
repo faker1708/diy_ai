@@ -73,12 +73,12 @@ def loss_f(y,true_y):
     # print(loss_tensor)
     # print(loss_tensor[:-1])
 
-    # aa = loss_tensor[:-1]
-    # loss = aa.sum()
+    aa = loss_tensor[:-1]
+    loss = aa.sum()
     
 
     # loss = loss_tensor[:-1].sum()
-    loss = loss_tensor.sum()
+    # loss = loss_tensor.sum()
 
     return loss
 
@@ -111,7 +111,7 @@ def fb():
 
     
     epoch = 11
-    lr = 0.01
+    lr = 0.03
 
     for j in range(epoch):
 

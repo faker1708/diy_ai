@@ -1,4 +1,4 @@
-import torch
+impor torch
 import math
 
     # x = torch.normal(0,1,(n,1)).half().cuda()
@@ -7,18 +7,15 @@ import math
 
 rl = torch.nn.ReLU(inplace=False)
 
-def get_data_set(n,k,m):
+def get_data_set(n,m):
     
 
 
+
     # true_w = torch.tensor([[3,4],[0,1]]).half().cuda()
-    true_w = torch.normal(0,1,(k,n))
+    true_w = torch.normal(0,1,(m,n))
     true_w [-1]=0
     true_w [-1,-1]=1
-
-    true_w1 = torch.normal(0,1,(m,k))
-    true_w1 [-1]=0
-    true_w1 [-1,-1]=1
 
 
     batch_width = 100
@@ -50,10 +47,8 @@ def get_data_set(n,k,m):
             x[-1]=1
             # y = true_w @ x
             y = rl(true_w @ x)
-            y1 = rl(true_w1 @ y)
-
             data.append(x)
-            data.append(y1)
+            data.append(y)
             ds.append(data)
         
     print(len(ds))
@@ -70,47 +65,36 @@ def loss_f(y,true_y):
 
     # print('loss',loss_tensor)
 
-    # print(loss_tensor)
-    # print(loss_tensor[:-1])
-
-    # aa = loss_tensor[:-1]
-    # loss = aa.sum()
-    
-
-    # loss = loss_tensor[:-1].sum()
     loss = loss_tensor.sum()
 
     return loss
 
 
-def fb():
-    print('双层非线性')
-
+def fa():
     n = 1+12
-
-    k = 1+10
     m = 1+3
-
-
-    ds = get_data_set(n,k,m)
+    ds = get_data_set(n,m)
     print(ds[0])
     print(len(ds))
 
+    # d2l.set_figsize()
+    # d2l.plt.scatter(features[:, 1].detach().numpy(), labels.detach().numpy(), 1)
 
-    w = torch.normal(0,1,(k,n)).half().cuda()
+
+    w = torch.normal(0,1,(m,n1)).half().cuda()
     w [-1]=0
     w [-1,-1]=1
     w.requires_grad=True
 
 
     
-    w1 = torch.normal(0,1,(m,k)).half().cuda()
+    w1 = torch.normal(0,1,(m1,n)).half().cuda()
     w1 [-1]=0
     w1 [-1,-1]=1
     w1.requires_grad=True
 
     
-    epoch = 11
+    epoch = 10
     lr = 0.01
 
     for j in range(epoch):
@@ -119,13 +103,15 @@ def fb():
             data = ds[i]
             x = data[0].cuda().half()
             true_y = data[1].cuda().half()
-           
+            # print(x)
+            # print(true_y)
+
+
+            
+            # y =w @ x
             y =rl( w @ x)
 
-            y1 = rl(w1 @ y)
-
-          
-            loss = loss_f(y1,true_y)
+            loss = loss_f(y,true_y)
 
             loss.backward(retain_graph=True)
 
@@ -133,53 +119,15 @@ def fb():
                 w -= lr * w.grad 
                 w.grad.zero_()
 
+        ll = float(loss)
+        # print(ll)
+        p = -math.log(ll)
+        print(p)
+            # print(math.ceil(p))
+            # break
 
-                w1 -= lr * w1.grad 
-                w1.grad.zero_()
-        print(loss)
 
-    # ll = float(loss)
-    # p = -math.log(ll)
-    # print(p)
     
-    # print('检查')
-    # datac = ds[0]
-    # xc = datac[0].cuda().half()
-    # true_yc = datac[1].cuda().half()
-    
-    # yc =rl( w @ x)
-
-    # y1c = rl(w1 @ yc)
-
-    # print(true_yc)
-    # print(y1c)
-
-    # lw = list()
-    # lw.append(w)
-    # lw.append(w1)
-    # lw.append(ds)
-    return w,w1,ds
-    
-
-def fa():
-
-    w,w1,ds = fb()
-    # ds = lw[2]
-
-
-    data = ds[0]
-    x = data[0].cuda().half()
-    true_y = data[1].cuda().half()
-
-    # w= lw[0]
-    # w1= lw[1]
-
-    y =rl( w @ x)
-    y1 = rl(w1 @ y)
-
-    print(true_y)
-    print(y1)
-
 
 if __name__ == "__main__":
     fa()

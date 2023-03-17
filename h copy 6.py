@@ -70,20 +70,12 @@ def loss_f(y,true_y):
 
     # print('loss',loss_tensor)
 
-    # print(loss_tensor)
-    # print(loss_tensor[:-1])
-
-    # aa = loss_tensor[:-1]
-    # loss = aa.sum()
-    
-
-    # loss = loss_tensor[:-1].sum()
     loss = loss_tensor.sum()
 
     return loss
 
 
-def fb():
+def fa():
     print('双层非线性')
 
     n = 1+12
@@ -91,10 +83,16 @@ def fb():
     k = 1+10
     m = 1+3
 
+    k = n
+    m =n
+
 
     ds = get_data_set(n,k,m)
     print(ds[0])
     print(len(ds))
+
+    # d2l.set_figsize()
+    # d2l.plt.scatter(features[:, 1].detach().numpy(), labels.detach().numpy(), 1)
 
 
     w = torch.normal(0,1,(k,n)).half().cuda()
@@ -110,7 +108,7 @@ def fb():
     w1.requires_grad=True
 
     
-    epoch = 11
+    epoch = 30
     lr = 0.01
 
     for j in range(epoch):
@@ -119,12 +117,29 @@ def fb():
             data = ds[i]
             x = data[0].cuda().half()
             true_y = data[1].cuda().half()
-           
+            # print(x)
+            # print(true_y)
+
+
+            
+            # y =w @ x
             y =rl( w @ x)
 
             y1 = rl(w1 @ y)
 
-          
+            # print(y1)
+            # break
+            # print(y[-1])
+            # print(y1[-1])
+            # break
+            if(y1[-1]!=1):
+                # raise('wefoio')
+                # print('错了',i)
+                # print(y,y1)
+                # print(x,w,w1)
+                # exit(-1)
+
+                pass
             loss = loss_f(y1,true_y)
 
             loss.backward(retain_graph=True)
@@ -136,50 +151,38 @@ def fb():
 
                 w1 -= lr * w1.grad 
                 w1.grad.zero_()
-        print(loss)
 
-    # ll = float(loss)
-    # p = -math.log(ll)
-    # print(p)
+            # print(w)
+            # print(w.data)
+            
+            
+            # 曲线救国
+            # w.data[-1]=0
+            # w.data[-1,-1]=1
+            # w1.data[-1]=0
+            # w1.data[-1,-1]=1
+
+
+        ll = float(loss)
+        # print(ll)
+        p = -math.log(ll)
+        print(p)
+            # print(math.ceil(p))
+            # break
     
-    # print('检查')
-    # datac = ds[0]
-    # xc = datac[0].cuda().half()
-    # true_yc = datac[1].cuda().half()
+    print('检查')
+    datac = ds[0]
+    xc = datac[0].cuda().half()
+    true_yc = datac[1].cuda().half()
     
-    # yc =rl( w @ x)
+    yc =rl( w @ x)
 
-    # y1c = rl(w1 @ yc)
+    y1c = rl(w1 @ yc)
 
-    # print(true_yc)
-    # print(y1c)
+    print(true_yc)
+    print(y1c)
 
-    # lw = list()
-    # lw.append(w)
-    # lw.append(w1)
-    # lw.append(ds)
-    return w,w1,ds
     
-
-def fa():
-
-    w,w1,ds = fb()
-    # ds = lw[2]
-
-
-    data = ds[0]
-    x = data[0].cuda().half()
-    true_y = data[1].cuda().half()
-
-    # w= lw[0]
-    # w1= lw[1]
-
-    y =rl( w @ x)
-    y1 = rl(w1 @ y)
-
-    print(true_y)
-    print(y1)
-
 
 if __name__ == "__main__":
     fa()
