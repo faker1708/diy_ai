@@ -3,6 +3,8 @@ import math
 
 import random
 
+    # x = torch.normal(0,1,(n,1)).half().cuda()
+    # w = torch.normal(0,1,(m,n),requires_grad=True).half().cuda()
 
 
 rl = torch.nn.ReLU(inplace=False)
@@ -10,12 +12,14 @@ rl = torch.nn.ReLU(inplace=False)
 def get_data_set(n,m):
     
 
-    true_w = torch.normal(0,1,(m,n)).cuda().half()
+
+    # true_w = torch.tensor([[3,4],[0,1]]).half().cuda()
+    true_w = torch.normal(0,1,(m,n))
 
 
-    true_b = torch.normal(0,1,(m,1)).cuda().half()
+    true_b = torch.normal(0,1,(m,1))
 
-    batch_width = 100   # 相当于batch_size
+    batch_width = 100
     batch_high = 10
 
 
@@ -30,42 +34,34 @@ def get_data_set(n,m):
     
     '''
 
+    #   batch_width  相当于batch_size
 
     set_count = batch_width * batch_high
     # 人工生成1000个数据的数据集 我不知道怎样调用cuda核心来并行地计算矩阵（或者说神经网络），算了，就用串行的写法吧
 
 
-    # x y均是二维张量，也就是矩阵，每列是条数据，数据 是列向量，而x y 是数据的组合，也就是批量
-
-    # n 是输入数据 的维度，输入是一个 n 维的向量，则 x 的形状是 n 行 bs列
-    # y 是 m 行 bs 列
-
     ds = list()
     for i in range(batch_high):
-        # for j in range(batch_width):
-        data = list()
-        x = torch.normal(0,1,(n,batch_width)).cuda().half()
-        y = rl(true_w @ x + true_b)
+        for j in range(batch_width):
+            data = list()
+            x = torch.normal(0,1,(n,1))
+            x[-1]=1
+            # y = true_w @ x
+            y = rl(true_w @ x + true_b)
 
-        # print(x.shape)
-        # print(y.shape)
-        # exit(-1)
-
-        data.append(x)
-        data.append(y)
-        ds.append(data)
+            data.append(x)
+            data.append(y)
+            ds.append(data)
         
-    print(len(ds))
+    # print(len(ds))
     return ds,true_w,true_b
 
 
 def loss_f(y,true_y):
     # print('输出一个标量')
-    diff_y = y-true_y
+    yy = y-true_y
 
-    print('diff_y',diff_y)
-
-    loss_tensor = diff_y**2/2
+    loss_tensor = yy**2/2
 
     # print('y',y)
 
@@ -87,10 +83,10 @@ def loss_f(y,true_y):
 def train():
     print('单层非线性')
 
-    n = 64
+    n = 41
 
-    m = 64
-    batch_width=100
+    m = 61
+
 
     ds,true_w,true_b = get_data_set(n,m)
     # print(ds[0])
@@ -100,57 +96,29 @@ def train():
     w = torch.normal(0,1,(m,n)).half().cuda()
     w.requires_grad=True
 
-    
-    # print('w',w)
-    # exit(-1)
-
-    b = torch.normal(0,1,(m,batch_width)).half().cuda()
+    b = torch.normal(0,1,(m,1)).half().cuda()
     b.requires_grad=True
 
     
-    epoch = 3
+    epoch = 11
     lr = 0.03
-
-    print('ds长度',len(ds))
-    
 
     for j in range(epoch):
 
-        for i in range(10):
+        for i in range(1000):
             # index= random.randint(0,1000-1)
             index = i
 
-            print('i',i)
-
             # print(index,end=' ')
             data = ds[index]
-            x = data[0]
-            true_y = data[1]
-
-
-
-            print(x.shape)
-            print(w.shape)
-            print(b.shape)
+            x = data[0].cuda().half()
+            true_y = data[1].cuda().half()
            
-            wx = torch.matmul(w , x)
-            wxb = wx+b
-            y= rl(wxb)
-
-
-            # y = rl( w @ x + b)
+            y = rl( w @ x + b)
 
             # y1 = rl(w1 @ y)
 
-            
-            print('w',w)
-            print('wx',wx)
-            # print(wxb)
-            # print(y)
-            print('x',x)
-            print('y',y)
-            
-
+          
             loss = loss_f(y,true_y)
 
             loss.backward(retain_graph=True)
@@ -166,13 +134,12 @@ def train():
         try:
             ll = float(loss)
             p = -math.log(ll)
-            print('p',p)
-            print(loss)
+            print(p)
+            # print(loss)
 
 
         except Exception as ex:
             pass
-        print('\n')
     # w1 =0
     return w,b,ds,true_w,true_b
     
