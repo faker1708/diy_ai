@@ -1,4 +1,4 @@
-impor torch
+import torch
 import math
 
     # x = torch.normal(0,1,(n,1)).half().cuda()
@@ -123,9 +123,10 @@ def train():
                 b -= lr * b.grad 
                 b.grad.zero_()
 
-        ll = float(loss)
-        p = -math.log(ll)
-        print(p)
+        # ll = float(loss)
+        # p = -math.log(ll)
+        # print(p)
+        print(loss)
     w1 =0
     return w,w1,ds
     
