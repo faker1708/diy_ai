@@ -20,6 +20,26 @@ true_w = true_w.half().cuda()
 
 
 
+
+
+
+
+
+x = torch.normal(0,1,(n,1)).half().cuda()
+x[-1]=1
+# x.requires_grad=True
+
+
+
+# rl = torch.nn.ReLU(inplace=False)
+
+
+
+
+# rl = torch.nn.ReLU()
+
+
+
 def loss_f(y,true_y):
     # print('输出一个标量')
     yy = y-true_y
@@ -43,26 +63,23 @@ w [-1,-1]=1
 w.requires_grad=True
 
 
-epoch = 3000
-lr = 0.03
-
-
-# x = torch.normal(0,1,(n,1)).half().cuda()
-
-x = torch.tensor([[7],[1]]).half().cuda()
-x[-1]=1
-true_y = true_w @ x
+epoch = 30
+lr = 0.01
 
 for i in range(epoch):
 
 
+    x = torch.normal(0,1,(n,1)).half().cuda()
+    x[-1]=1
+    # true_y =rl(true_w @ x)
+    true_y = true_w @ x
     # print(true_y)
 
 
     # y = torch.mm(w,x)
     # rl(y)
     
-    y = w @ x
+    y = w @ w
 
     loss = loss_f(y,true_y)
 
@@ -72,21 +89,27 @@ for i in range(epoch):
         w -= lr * w.grad 
         w.grad.zero_()
 
+    # xx = 2
+    if(loss<1e-2):
+        print('ok',i,float(loss))
+        break
 
+# print(w-true_w)
+
+# y = torch.mm(w,x)
+# rl(y)
+
+# y
+
+# print(y)
+# print(true_y)
+# loss = loss_f(y,true_y)
+# print(loss)
+
+
+# print(w)
+# print(true_w)
     ll = float(loss)
-    # print(ll)
-
+    # print(loss)
+    print(ll)
 print(w)
-print(true_w)
-print(y)
-print(true_y)
-
-
-
-
-x = torch.tensor([[8],[1]]).half().cuda()
-true_y = true_w @ x
-y = w @ x
-
-print(y)
-print(true_y)
