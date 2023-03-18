@@ -1,67 +1,37 @@
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import torch 
 import matplotlib.pyplot as plt
 
 
 
 class dnn():
+    # 开始写双层
+
+    # print(k)
+
+
+
+    # super_param = [4,3,2,2,2,2,1]
+    super_param = [4,3,2,2,1]
+    super_param = [2,2,2,2,2,2,2,2,2,2]
+    super_param = [4,4,4,2]
+    depth = len(super_param)
     
-    super_param = [6,2,2,2,2,2]
+    rl = torch.nn.ReLU(inplace=False)   # 定义relu
+    
+    
+    lr = 0.03
+    # lr = 1
 
     #　数据量
-    batch_size = 2**10
+    batch_size = 2**9
     batch_hight = 2**2
 
     # 训练量
     print_period = 2**8
-    train_count = print_period * 2**4
+    train_count = print_period * 2**6
 
 
-
-    depth = len(super_param)
-    lr = 0.03
-    rl = torch.nn.ReLU(inplace=False)   # 定义relu
 
     def test_a(self,x,true_y,param):
         # 不止被 test调用注意。
@@ -76,38 +46,19 @@ class dnn():
         kn = self.super_param[0]
         n = 2**kn
         
-        test_count = 2**8
+        test_count = 32
         fls = 0
-        fll = list() #　float_loss_list
         for i in range(test_count):
             x = torch.normal(0,1,(n,self.batch_size)).half().cuda()
             true_y = self.forward(x,true_param)
             loss = self.test_a(x,true_y,param)
             fl = float(loss)
-            fll.append(fl)
-
-            # if(fl<100):
-            #     pass
-            # else:
-            #     # print('损失太大了',fl,end= ' ')
-            #     fl = 10000    # 钳制到100，防止少数几个inf把总和撑爆。
-            # print(fl,end=' ')
-            
             fls += fl
-        print('')
+        #     print(fl,end=' ')
+        # print('')
 
         flv = fls /test_count
-        if(flv>2**10):
-            print('训练失败,测试成绩如下')
-            print(fll)
-            print('平均测试损失',flv)
-        else:
-            print('平均测试损失',flv)
-            if(flv>10):
-                # print(fll)
-                pass
-
-
+        print('平均测试损失',flv)
         return flv
 
 
@@ -277,6 +228,7 @@ class dnn():
                 # print(pp)
                 
 
+                print(float(loss),pp)
                 # print(float(loss),epoch)
 
 
@@ -299,12 +251,8 @@ class dnn():
                     print('练习时长',epoch)
                     break
 
-                print(float(loss),pp,'lr = ',self.lr)
-                if(pp>2**2):
+                if(pp>4):
                     if(loss<100):
-
-
-
                         cl = loss.cpu()
                         cl = float(cl)
                         # print(cl)
@@ -316,14 +264,12 @@ class dnn():
 
                         plt.scatter(x_index, y_index, marker="o")
                         
-                        # plt.pause(0.2)
+                        plt.pause(0.2)
 
 
         self.test(true_param,train_param)
 
         print('训练前损失',loss_before)
-
-        self.test(true_param,true_param)
 
         
         print('\a')

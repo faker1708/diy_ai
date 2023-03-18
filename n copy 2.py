@@ -1,31 +1,70 @@
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import torch 
 import matplotlib.pyplot as plt
 
 
 
 class dnn():
-    # 开始写双层
+    
+    super_param = [6,2,2,2,2,2]
 
-    # print(k)
-
-
-    batch_size = 2**6
+    #　数据量
+    batch_size = 2**10
     batch_hight = 2**2
 
-    super_param = [4,3,2,2,1]
-    depth = len(super_param)
-    
-    rl = torch.nn.ReLU(inplace=False)   # 定义relu
-    
-    
-    lr = 0.03
-    # lr = 1
-
+    # 训练量
     print_period = 2**8
-    train_count = print_period * 2**6
+    train_count = print_period * 2**4
+
+
+
+    depth = len(super_param)
+    lr = 0.03
+    rl = torch.nn.ReLU(inplace=False)   # 定义relu
 
     def test_a(self,x,true_y,param):
+        # 不止被 test调用注意。
         y = self.forward(x,param)
         loss = self.loss_f(y,true_y,self.batch_size)
         return loss
@@ -34,14 +73,32 @@ class dnn():
 
 
     def test(self,true_param,param):
-        n = self.super_param[0]
+        kn = self.super_param[0]
+        n = 2**kn
         
-        test_count = 32
+        test_count = 2**8
+        fls = 0
+        fll = list() #　float_loss_list
         for i in range(test_count):
             x = torch.normal(0,1,(n,self.batch_size)).half().cuda()
             true_y = self.forward(x,true_param)
-            self.test_a(x,true_y,param)
+            loss = self.test_a(x,true_y,param)
+            fl = float(loss)
+            fll.append(fl)
+
             
+            fls += fl
+        print('')
+
+        flv = fls /test_count
+        if(flv>2**10):
+            print('训练失败,测试成绩如下')
+            print(fll)
+            print('平均测试损失',flv)
+        else:
+            print('平均测试损失',flv)
+
+        return flv
 
 
     def build_nn(self):
@@ -56,6 +113,10 @@ class dnn():
             if(i<=depth -2):
                 n = super_param[i]
                 m = super_param[i+1]
+
+                n = 2**n
+                m = 2**m
+
                 w = torch.normal(0,1,(m,n)).half().cuda()
                 b = torch.normal(0,1,(m,self.batch_size)).half().cuda()
                 
@@ -124,7 +185,7 @@ class dnn():
         batch_size = self.batch_size
 
         n = self.super_param[0]
-        
+        n = 2**n
 
 
 
@@ -176,6 +237,8 @@ class dnn():
         
         train_param = self.build_nn()
 
+        print('训练前测试')
+        loss_before = self.test(true_param,train_param)
 
         plt.ion()
         
@@ -197,14 +260,9 @@ class dnn():
 
 
             if(epoch%(self.print_period)== 0):
-                # print(loss)
-                # print(float(loss),end='\n')
-                print(float(loss),epoch)
-
-
-                # print(self.lr)
+                pp = epoch//(self.print_period)
+                # 动态调整学习率
                 if(loss>10):
-                    print('损失太大了')
                     self.lr=2
                 elif(loss>1):
                     self.lr = 1 #0.1
@@ -219,31 +277,36 @@ class dnn():
                     print('练习时长',epoch)
                     break
 
-
-                cl = loss.cpu()
-                cl = float(cl)
-                print(cl)
-                
-                plt.grid(True)
-                x_index = [epoch]
-                y_index = [cl]
+                print(float(loss),pp,'lr = ',self.lr)
+                if(pp>2**2):
+                    if(loss<100):
 
 
-                plt.scatter(x_index, y_index, marker="o")
-                
-                plt.pause(0.2)
+
+                        cl = loss.cpu()
+                        cl = float(cl)
+                        # print(cl)
+                        
+                        plt.grid(True)
+                        x_index = [epoch]
+                        y_index = [cl]
 
 
-        print('\a')
+                        plt.scatter(x_index, y_index, marker="o")
+                        
+                        # plt.pause(0.2)
+
+
         self.test(true_param,train_param)
+
+        print('训练前损失',loss_before)
+
+        self.test(true_param,true_param)
+
+        
+        print('\a')
         plt.pause(0)
 
-
-
-# noise = torch.normal(0,0.1,(3,3))
-# print(noise)
-
-# dnn.fa()
 a = dnn()
 a.fa()
 

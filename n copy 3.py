@@ -1,30 +1,69 @@
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import torch 
 import matplotlib.pyplot as plt
 
 
 
 class dnn():
-    # 开始写双层
+    
+    # super_param = [6,2,2,2,2,2,2,2]
+    super_param = [6,6,6]
+    super_param = [4,4,4]
 
-    # print(k)
-
-
-    batch_size = 2**6
+    #　数据量
+    batch_size = 2**9
     batch_hight = 2**2
 
-    # super_param = [4,3,2,2,2,2,1]
-    super_param = [4,3,2,1]
-    depth = len(super_param)
-    
-    rl = torch.nn.ReLU(inplace=False)   # 定义relu
-    
-    
-    lr = 0.03
-    # lr = 1
+    # 训练量
+    print_period = 2**9
+    train_count = print_period * 2**10
 
-    print_period = 2**8
-    train_count = print_period * 2**4
+
+
+    depth = len(super_param)
+    lr = 0.03
+    rl = torch.nn.ReLU(inplace=False)   # 定义relu
 
     def test_a(self,x,true_y,param):
         # 不止被 test调用注意。
@@ -39,17 +78,46 @@ class dnn():
         kn = self.super_param[0]
         n = 2**kn
         
-        test_count = 32
+        test_count = 2**10
+        fls = 0
+        fll = list() #　float_loss_list
+
+
+        valid_count = test_count
+
+        invaild = 0
         for i in range(test_count):
             x = torch.normal(0,1,(n,self.batch_size)).half().cuda()
             true_y = self.forward(x,true_param)
             loss = self.test_a(x,true_y,param)
             fl = float(loss)
-            print(fl,end=' ')
-        
+            fll.append(fl)
+
+            if(fl>2**10):
+                invaild = 1
+                fl = 0
+                valid_count -=1
+            
+            fls += fl
         print('')
-        flv = fl /test_count
-        print('平均测试损失',flv)
+
+        # print('vc',valid_count)
+
+        if(valid_count==0):
+            flv = float('inf')
+        else:
+            flv = fls /valid_count
+        # if(flv>2**10):
+        if(invaild ==1 ):
+            # print('训练失败,测试成绩如下')
+            # print(fll)
+            print('有无效的测试点')
+            # print('平均测试损失',flv)
+        else:
+            # print('平均测试损失',flv)
+            pass
+
+        return flv
 
 
     def build_nn(self):
@@ -188,6 +256,8 @@ class dnn():
         
         train_param = self.build_nn()
 
+        print('训练前测试')
+        loss_before = self.test(true_param,train_param)
 
         plt.ion()
         
@@ -208,23 +278,20 @@ class dnn():
                 self.update(train_param)
 
 
+            # if(epoch%(self.print_period * 2**2)== 0):
+                
+            #     test_loss = self.test(true_param,train_param)
+
+
             if(epoch%(self.print_period)== 0):
-                # print(loss)
-                # print(float(loss),end='\n')
-                print(float(loss),epoch)
-
-
-                # print(self.lr)
-
+                pp = epoch//(self.print_period)
                 # 动态调整学习率
                 if(loss>10):
-                    print('损失太大了')
                     self.lr=2
                 elif(loss>1):
                     self.lr = 1 #0.1
                 else:
                     self.lr = 0.03
-
 
 
                 
@@ -233,31 +300,54 @@ class dnn():
                     print('练习时长',epoch)
                     break
 
+                fl = float(loss)
+                if fl == float('inf'):
+                    print('无效')
+                else:
+                    print('训练集损失',float(loss),pp,'lr = ',self.lr)
 
-                cl = loss.cpu()
-                cl = float(cl)
-                print(cl)
-                
-                plt.grid(True)
-                x_index = [epoch]
-                y_index = [cl]
-
-
-                plt.scatter(x_index, y_index, marker="o")
-                
-                plt.pause(0.2)
+                test_loss = self.test(true_param,train_param)
+                print('测试集损失',test_loss)
+                if(pp>2**2):
+                    if(loss<100):
 
 
-        print('\a')
+
+                        cl = loss.cpu()
+                        cl = float(cl)
+                        # print(cl)
+                        
+                        plt.grid(True)
+                        x_index = [epoch]
+                        y_index = [cl]
+
+
+                        plt.scatter(x_index, y_index)
+
+                        y_index = [test_loss]
+                        plt.scatter(x_index, y_index)
+
+
+
+                        plt.pause(0.2)
+
+
+                        # plt.scatter(x_index, y_index, marker="o")
+                        
+
+
+
         self.test(true_param,train_param)
-        plt.pause(0)
+
+        # print('训练前损失',loss_before)
+
+        # 验证 test 函数的自洽性
+        # self.test(true_param,true_param)
 
         
+        print('\a')
+        plt.pause(0)
 
-# noise = torch.normal(0,0.1,(3,3))
-# print(noise)
-
-# dnn.fa()
 a = dnn()
 a.fa()
 
