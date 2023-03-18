@@ -3,40 +3,18 @@ import torch
 import matplotlib.pyplot as plt
 
 
-# 1 到 10 的学习率太小了吧
 
 class dnn():
     # 开始写双层
 
     n = 2**4   # 输入维度
     m = 2**3   # 输出维度
-    l = 2**3
-    k = 2**2
+    l = 2**2
+    k = 2**1
     # print(k)
-
 
     batch_size = 2**7
     batch_hight = 2**2
-
-    super_param = [4,3,2,1]
-    depth = len(super_param)
-
-    def build_nn(self):
-        super_param=self.super_param
-        depth = len(super_param)
-
-        w_list = list()
-        b_list = list()
-        for i,ele in enumerate(super_param):
-            if(i<=depth -2):
-                n = super_param[i]
-                m = super_param[i+1]
-                w = torch.normal(0,1,(m,n)).half().cuda()
-                b = torch.normal(0,1,(m,self.batch_size)).half().cuda()
-
-                w_list.append(w)
-                b_list.append(b)
-
 
 
     rl = torch.nn.ReLU(inplace=False)
@@ -46,7 +24,7 @@ class dnn():
     # lr = 1
 
     print_period = 2**8
-    train_count = print_period * 2**5
+    train_count = print_period * 2**6
 
 
     true_w = torch.normal(0,1,(m,n)).half().cuda()

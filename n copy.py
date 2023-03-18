@@ -3,7 +3,6 @@ import torch
 import matplotlib.pyplot as plt
 
 
-# 1 到 10 的学习率太小了吧
 
 class dnn():
     # 开始写双层
@@ -15,15 +14,29 @@ class dnn():
     # print(k)
 
 
-    batch_size = 2**7
+    batch_size = 2**6
     batch_hight = 2**2
 
     super_param = [4,3,2,1]
     depth = len(super_param)
+    
+    rl = torch.nn.ReLU(inplace=False)   # 定义relu
+    
+    
+    lr = 0.03
+    # lr = 1
+
+    print_period = 2**8
+    train_count = print_period * 2**6
+
+
+
 
     def build_nn(self):
         super_param=self.super_param
         depth = len(super_param)
+
+        param = dict()
 
         w_list = list()
         b_list = list()
@@ -36,30 +49,30 @@ class dnn():
 
                 w_list.append(w)
                 b_list.append(b)
+        param['w_list'] = w_list
+        param['b_list'] = b_list
+        param['depth'] = depth
+
+        return param
+
+    def forward(self,x,param):
+        # y = 0
+
+        w_list= param['w_list']
+        b_list= param['b_list']
 
 
+        old_x = x 
+        depth = param['depth']
+        for i in range(depth-1):    # 如果 是4层，则只循环3次，分别 是012
+            w = w_list[i]
+            b = b_list[i]
 
-    rl = torch.nn.ReLU(inplace=False)
-    
-    
-    lr = 0.03
-    # lr = 1
+            
+            new_x = self.rl(w @ old_x + b)
+            old_x = new_x
 
-    print_period = 2**8
-    train_count = print_period * 2**5
-
-
-    true_w = torch.normal(0,1,(m,n)).half().cuda()
-    true_b = torch.normal(0,1,(m,batch_size)).half().cuda()
-
-    true_w1 = torch.normal(0,1,(l,m)).half().cuda()
-    true_b1 = torch.normal(0,1,(l,batch_size)).half().cuda()
-
-    
-    true_w2 = torch.normal(0,1,(k,l)).half().cuda()
-    true_b2 = torch.normal(0,1,(k,batch_size)).half().cuda()
-
-
+        return y
 
 
     def loss_f(self,y,true_y,batch):
@@ -85,14 +98,8 @@ class dnn():
     def dlf(self):
         # 人工生成数据集
 
-        true_w = self.true_w
-        true_b = self.true_b
+        param = self.build_nn()
 
-        true_w1 = self.true_w1
-        true_b1 = self.true_b1
-        
-        true_w2 = self.true_w2
-        true_b2 = self.true_b2
         
         
         batch_hight = self.batch_hight
