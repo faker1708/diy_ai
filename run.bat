@@ -1,2 +1,2 @@
 cls
-python l.py
+python m.py
