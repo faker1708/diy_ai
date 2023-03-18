@@ -41,30 +41,24 @@
 
 
 import torch 
-
 import matplotlib.pyplot as plt
-import math
+
 
 
 class dnn():
     
-
-    width_mi = 2
-    depth_mi = 7
-
-    super_param = list()
-    for i in range(2**depth_mi):
-        super_param.append(width_mi)
-
-    super_param[0]=7
+    # super_param = [6,2,2,2,2,2,2,2]
+    super_param = [6,6,6]
+    super_param = [4,4,4,2]
+    super_param = [4,4,4,2]
+    super_param = [4,4,4]
 
     #　数据量
-    batch_size = 2**11
-
+    batch_size = 2**10
     batch_hight = 2**2
 
     # 训练量
-    print_period = 2**8
+    print_period = 2**9
     train_count = print_period * 2**10
 
 
@@ -259,9 +253,6 @@ class dnn():
 
 
     def fa(self):
-        print(self.super_param)
-        print('深度',len(self.super_param))
-        print('宽度',2**self.super_param[1])
 
         # batch_size = self.batch_size
         
@@ -289,6 +280,11 @@ class dnn():
             # 重新随一个初始训练网络
             train_param = self.build_nn()
 
+            # print('训练前测试')
+            # loss_before = self.test(true_param,train_param)
+
+            
+            # print('\a')
 
             # plt 绘图
             x_index = list()
@@ -331,15 +327,17 @@ class dnn():
                         print('练习时长',epoch)
                         break
 
+                    # fl = float(loss)
+                    # if fl == float('inf'):
+                    #     print('无效')
+                    # else:
+                    #     print('训练集损失',float(loss),pp,'lr = ',self.lr)
+
+
                     test_loss,valid_ratio = self.test(true_param,train_param)
-                    
-                    if(math.isnan(test_loss)):
-                        patience-= 1
-                        print(patience)
-                              
-                    fl = float(loss) # 训练集损失
-                    # print(fl)
-                    print(fl,test_loss,valid_ratio)      
+                    print(test_loss,valid_ratio)                
+                    fl = float(loss)
+                    print(fl)
 
                     if(valid_ratio>2**-7):
                         if(find_it == 0):
@@ -351,14 +349,12 @@ class dnn():
                         patience -=1
                         print('patience',patience)
                     
-
                     if(patience<=0):
                         break
                                 
                         
                     
-                    # if(pp>2**2):
-                    if(pp>0):
+                    if(pp>2**2):
                         # if(loss<100):
 
 
@@ -369,20 +365,42 @@ class dnn():
                             
                             # plt.grid(True)
                             # x = [epoch]
+                            x_index .append(epoch)
 
 
 
-                            if(valid_ratio>2**-8):
+                            if(valid_ratio>2**-7):
                             # if(test_loss<2**10):
 
-                                x_index .append(epoch)
+                                # 测试集 损失
+                                # y = [test_loss]
                                 y_index .append(test_loss)
+                                plt.plot(x_index, y_index,c='pink',ls='-', marker='o', mec='b',mfc='w')  ## 保存历史数据
+                                # plt.plot(x_index, y_index,color = 'deeppink',linewidth = 2,linestyle = '-')
 
-                                plt.plot(x_index, y_index,c='deeppink',ls='-')  ## 保存历史数据
-                                
-                            plt.pause(0.01) # 显示图像
+                                print('测试集损失',test_loss)
+
+                                # y_index = [valid_ratio]
+                                # plt.scatter(x_index, y_index)
+                            
 
 
+                            plt.pause(0.01)
+
+
+                            # plt.scatter(x_index, y_index, marker="o")
+                            
+            # 训练循环结束
+
+
+        # self.test(true_param,train_param)
+
+        # print('训练前损失',loss_before)
+
+        # 验证 test 函数的自洽性
+        # self.test(true_param,true_param)
+
+        
         print('\a')
         plt.pause(0)
 

@@ -95,7 +95,7 @@ class dnn():
 
         invaild = 0
         for i in range(test_count):
-            x = torch.normal(0,1,(n,self.batch_size)).half().cuda()
+            x = torch.normal(0,1,(n,self.batch_size)).cpu()
             true_y = self.forward(x,true_param)
             loss = self.test_a(x,true_y,param)
             fl = float(loss)
@@ -149,8 +149,8 @@ class dnn():
                 n = 2**n
                 m = 2**m
 
-                w = torch.normal(0,1,(m,n)).half().cuda()
-                b = torch.normal(0,1,(m,self.batch_size)).half().cuda()
+                w = torch.normal(0,1,(m,n)).cpu()
+                b = torch.normal(0,1,(m,self.batch_size)).cpu()
                 
                 # 默认记录计算图
                 w.requires_grad=True
@@ -223,7 +223,7 @@ class dnn():
 
         data_list = list()
         for i in range(batch_hight):
-            x = torch.normal(0,1,(n,batch_size)).half().cuda()
+            x = torch.normal(0,1,(n,batch_size)).cpu()
 
             y = self.forward(x,param)
 

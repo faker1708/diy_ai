@@ -48,6 +48,8 @@ import math
 
 class dnn():
     
+    mode = 'cpu'
+    mode = 'gpu'
 
     width_mi = 2
     depth_mi = 7
@@ -64,7 +66,7 @@ class dnn():
     batch_hight = 2**2
 
     # 训练量
-    print_period = 2**8
+    print_period = 2**1
     train_count = print_period * 2**10
 
 
@@ -95,7 +97,12 @@ class dnn():
 
         invaild = 0
         for i in range(test_count):
-            x = torch.normal(0,1,(n,self.batch_size)).half().cuda()
+            if(self.mode == 'cpu'):
+                x = torch.normal(0,1,(n,self.batch_size)).cpu()
+            elif(self.mode == 'gpu'):
+                x = torch.normal(0,1,(n,self.batch_size)).cuda().half()
+
+
             true_y = self.forward(x,true_param)
             loss = self.test_a(x,true_y,param)
             fl = float(loss)
@@ -149,8 +156,17 @@ class dnn():
                 n = 2**n
                 m = 2**m
 
-                w = torch.normal(0,1,(m,n)).half().cuda()
-                b = torch.normal(0,1,(m,self.batch_size)).half().cuda()
+
+
+                if(self.mode == 'cpu'):
+                    
+                    w = torch.normal(0,1,(m,n)).cpu()
+                    b = torch.normal(0,1,(m,self.batch_size)).cpu()
+                elif(self.mode == 'gpu'):
+                    w = torch.normal(0,1,(m,n)).cuda().half()
+                    b = torch.normal(0,1,(m,self.batch_size)).cuda().half()
+
+                    
                 
                 # 默认记录计算图
                 w.requires_grad=True
@@ -171,12 +187,16 @@ class dnn():
     def forward(self,x,param):
         # y = 0
 
+
         w_list= param['w_list']
         b_list= param['b_list']
 
+        # print('forward')
 
         depth = param['depth']
         for i in range(depth-1):    # 如果 是4层，则只循环3次，分别 是012
+            
+            # print('forward',i)
             w = w_list[i]
             b = b_list[i]
 
@@ -185,6 +205,30 @@ class dnn():
 
         return x
 
+
+    def update(self,param):
+        
+        w_list= param['w_list']
+        b_list= param['b_list']
+
+        batch_size = self.batch_size
+        lr = self.lr
+        # print('update')
+
+        with torch.no_grad():
+            
+            depth = param['depth']
+            for i in range(depth-1): 
+                # print('update',i)
+                w = w_list[i]
+                b = b_list[i]
+
+                w -= lr * w.grad / batch_size
+                w.grad.zero_()
+
+
+                b -= lr * b.grad / batch_size
+                b.grad.zero_()
 
     def loss_f(self,y,true_y,batch):
 
@@ -223,7 +267,11 @@ class dnn():
 
         data_list = list()
         for i in range(batch_hight):
-            x = torch.normal(0,1,(n,batch_size)).half().cuda()
+            
+            if(self.mode == 'cpu'):
+                x = torch.normal(0,1,(n,batch_size)).cpu()
+            elif(self.mode == 'gpu'):
+                x = torch.normal(0,1,(n,batch_size)).cuda().half()
 
             y = self.forward(x,param)
 
@@ -233,29 +281,8 @@ class dnn():
             data['y']=y
             
             data_list.append(data)
+        # print('dlf end')
         return data_list
-
-    def update(self,param):
-        
-        w_list= param['w_list']
-        b_list= param['b_list']
-
-        batch_size = self.batch_size
-        lr = self.lr
-
-        with torch.no_grad():
-            
-            depth = param['depth']
-            for i in range(depth-1): 
-                w = w_list[i]
-                b = b_list[i]
-
-                w -= lr * w.grad / batch_size
-                w.grad.zero_()
-
-
-                b -= lr * b.grad / batch_size
-                b.grad.zero_()
 
 
     def fa(self):
@@ -296,6 +323,9 @@ class dnn():
             for epoch in range(self.train_count):
 
                 for i in range(self.batch_hight):
+                    
+                    # print('fa')
+                    # print('batch_hight',i)
                     data = data_list[i]
                     x = data['x']
                     true_y = data['y']
@@ -307,15 +337,19 @@ class dnn():
                     loss.backward(retain_graph=True)
 
                     self.update(train_param)
+                
 
+                if(epoch%(self.print_period * 2**4)== 0):
+                    print(loss)    
 
-                # if(epoch%(self.print_period * 2**2)== 0):
+                if(epoch%(self.print_period * 2**8)== 0):
                     
-                #     test_loss = self.test(true_param,train_param)
+                    test_loss,valid_ratio = self.test(true_param,train_param)
+                    print(test_loss,valid_ratio )
 
 
                 if(epoch%(self.print_period)== 0):
-                    pp = epoch//(self.print_period)
+                    # pp = epoch//(self.print_period)
                     # 动态调整学习率
                     if(loss>10):
                         self.lr=2
@@ -325,63 +359,9 @@ class dnn():
                         self.lr = 0.03
 
 
-                    
-                    if(loss<0.01):
-                        print('不需要再训练了')
-                        print('练习时长',epoch)
-                        break
-
-                    test_loss,valid_ratio = self.test(true_param,train_param)
-                    
-                    if(math.isnan(test_loss)):
-                        patience-= 1
-                        print(patience)
-                              
-                    fl = float(loss) # 训练集损失
-                    # print(fl)
-                    print(fl,test_loss,valid_ratio)      
-
-                    if(valid_ratio>2**-7):
-                        if(find_it == 0):
-                            # 如果找到了就滴一声
-                            print('\a')
-                            find_it = 1
-                        pass
-                    else:
-                        patience -=1
-                        print('patience',patience)
-                    
-
-                    if(patience<=0):
-                        break
-                                
-                        
-                    
-                    # if(pp>2**2):
-                    if(pp>0):
-                        # if(loss<100):
-
-
-
-                            cl = loss.cpu()
-                            cl = float(cl)
-                            # print(cl)
-                            
-                            # plt.grid(True)
-                            # x = [epoch]
-
-
-
-                            if(valid_ratio>2**-8):
-                            # if(test_loss<2**10):
-
-                                x_index .append(epoch)
-                                y_index .append(test_loss)
-
-                                plt.plot(x_index, y_index,c='deeppink',ls='-')  ## 保存历史数据
-                                
-                            plt.pause(0.01) # 显示图像
-
+            # epoch end
+            test_loss,valid_ratio = self.test(true_param,train_param)
+            print(test_loss,valid_ratio )
 
         print('\a')
         plt.pause(0)

@@ -41,24 +41,24 @@
 
 
 import torch 
-
 import matplotlib.pyplot as plt
-import math
+
 
 
 class dnn():
     
 
     width_mi = 2
-    depth_mi = 7
+    depth_mi = 5
 
     super_param = list()
     for i in range(2**depth_mi):
         super_param.append(width_mi)
 
-    super_param[0]=7
+    # super_param[0]=7
 
     #　数据量
+    # batch_size = 2**14  #inf
     batch_size = 2**11
 
     batch_hight = 2**2
@@ -289,6 +289,11 @@ class dnn():
             # 重新随一个初始训练网络
             train_param = self.build_nn()
 
+            # print('训练前测试')
+            # loss_before = self.test(true_param,train_param)
+
+            
+            # print('\a')
 
             # plt 绘图
             x_index = list()
@@ -331,9 +336,16 @@ class dnn():
                         print('练习时长',epoch)
                         break
 
+                    # fl = float(loss)
+                    # if fl == float('inf'):
+                    #     print('无效')
+                    # else:
+                    #     print('训练集损失',float(loss),pp,'lr = ',self.lr)
+
+
                     test_loss,valid_ratio = self.test(true_param,train_param)
                     
-                    if(math.isnan(test_loss)):
+                    if(test_loss == float('nan')):
                         patience-= 1
                         print(patience)
                               
@@ -375,14 +387,42 @@ class dnn():
                             if(valid_ratio>2**-8):
                             # if(test_loss<2**10):
 
+                                # 测试集 损失
+                                # y = [test_loss]
                                 x_index .append(epoch)
                                 y_index .append(test_loss)
 
+                                # x_index = [epoch]
+                                # y_index = [test_loss]
+
+
+                                # plt.plot(x_index, y_index,c='deeppink',ls='-', marker='o', mec='b',mfc='w')  ## 保存历史数据
                                 plt.plot(x_index, y_index,c='deeppink',ls='-')  ## 保存历史数据
-                                
+                                # plt.plot(x_index, y_index,color = 'deeppink',linewidth = 2,linestyle = '-')
+
+                                # print('测试集损失',test_loss)
+
+                                # y_index = [valid_ratio]
+                                # plt.scatter(x_index, y_index)
+                            
+
+
                             plt.pause(0.01) # 显示图像
 
 
+                            # plt.scatter(x_index, y_index, marker="o")
+                            
+            # 训练循环结束
+
+
+        # self.test(true_param,train_param)
+
+        # print('训练前损失',loss_before)
+
+        # 验证 test 函数的自洽性
+        # self.test(true_param,true_param)
+
+        
         print('\a')
         plt.pause(0)
 
