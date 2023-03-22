@@ -3,6 +3,8 @@
 学习ai 的代码
 
 
+环境
+conda activate python39
 
 
 # 项目中止

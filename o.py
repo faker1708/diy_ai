@@ -50,8 +50,8 @@ class dnn():
     
     mode = 'gpu'    # 'gpu'
 
-    width_mi = 2
-    depth_mi = 4
+    width_mi = 4
+    depth_mi = 1
 
     super_param = list()
     for i in range(2**depth_mi):
